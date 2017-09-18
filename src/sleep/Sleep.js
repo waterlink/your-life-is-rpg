@@ -11,6 +11,7 @@ export class Sleep extends UserInterfaceAware {
 
     name
     sleptAt
+    essential = 50
 
     constructor() {
         super()

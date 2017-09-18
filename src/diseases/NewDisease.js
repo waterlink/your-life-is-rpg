@@ -5,6 +5,7 @@ export class NewDisease extends UserInterfaceAware {
 
     userInterface = ['create']
     setting = true
+    essential = 50
 
     constructor() {
         super()
