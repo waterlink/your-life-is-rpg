@@ -11,6 +11,7 @@ export class Character extends UserInterfaceAware {
     }
 
     name = ''
+    essential = 90
 
     _maxHp = 5
     _hp = 5

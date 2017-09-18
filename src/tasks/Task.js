@@ -1,6 +1,7 @@
 import {registerUserInterfaceAware, UserInterfaceAware} from '../UserInterfaceAware'
 import {findFirstObject} from '../Objects'
 import {Character} from '../character/Character'
+import {coloredNumber, today} from '../util'
 
 export class Task extends UserInterfaceAware {
 
@@ -9,12 +10,12 @@ export class Task extends UserInterfaceAware {
 
     _hp = 0
     get hp() {
-        return this.parseNumber(this._hp)
+        return coloredNumber(this._hp)
     }
 
     _ep = 0
     get ep() {
-        return this.parseNumber(this._ep)
+        return coloredNumber(this._ep)
     }
 
     get completed() {
@@ -34,21 +35,6 @@ export class Task extends UserInterfaceAware {
         this.undo.setting = true
     }
 
-    parseNumber(number) {
-        //noinspection JSPrimitiveTypeWrapperUsage
-        const result = new Number(parseFloat(number))
-
-        if (number < 0) {
-            //noinspection JSPrimitiveTypeWrapperUsage
-            result.color = 'red'
-        } else if (number > 0) {
-            //noinspection JSPrimitiveTypeWrapperUsage
-            result.color = 'green'
-        }
-
-        return result
-    }
-
     complete() {
         const character = findFirstObject(Character)
 
@@ -61,7 +47,7 @@ export class Task extends UserInterfaceAware {
     }
 
     markAsCompleted() {
-        this.completedAt = this.today()
+        this.completedAt = today()
         this.replaceCompleteWithCompleted()
     }
 
@@ -86,18 +72,8 @@ export class Task extends UserInterfaceAware {
         if (index >= 0) this.userInterface.splice(index, 1, 'complete')
     }
 
-    today() {
-        const now = new Date()
-
-        const day = now.getDate()
-        const month = now.getMonth() + 1
-        const year = now.getFullYear()
-
-        return `${year}-${month}-${day}`
-    }
-
     updateAfterLoad() {
-        if (this.completedAt === this.today()) {
+        if (this.completedAt === today()) {
             this.replaceCompleteWithCompleted()
         }
     }
@@ -109,12 +85,8 @@ export class Task extends UserInterfaceAware {
         }
 
         const character = findFirstObject(Character)
-
-        if (character) {
-            character.changeHpBy(-this.hp)
-            character.changeEpBy(-this.ep)
-        }
-
+        character.changeHpBy(-this.hp)
+        character.changeEpBy(-this.ep)
         this.unComplete()
     }
 

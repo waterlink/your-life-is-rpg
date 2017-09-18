@@ -27,9 +27,10 @@ const createObjectFromRaw = (rawObject) => {
 
 export class MyWork extends UserInterfaceAware {
 
-    userInterface = ['save', 'reload', 'settings', 'reset']
+    userInterface = ['save', 'settings', 'reload', 'reset']
     localStorageKey = 'MyWork.savedWork'
     settingsShown = true
+    essential = 100
 
     constructor() {
         super()

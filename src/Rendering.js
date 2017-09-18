@@ -1,26 +1,31 @@
 import {applicationObjects, findFirstObject} from './Objects'
 import {UserInterfaceAware} from './UserInterfaceAware'
 import {MyWork} from './MyWork'
+import {Filter} from './Filter'
 
 const appContainer = document.getElementById('app')
 
-const extractArgsString = function (fnStr) {
+const toolsContainer = document.getElementById('tools')
+
+export const filterTool = new Filter()
+
+const extractArgsString = (fnStr) => {
     return fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')'))
 }
 
-const parseArgsString = function (argStr) {
+const parseArgsString = (argStr) => {
     return argStr.split(',')
         .map(s => s.trim())
         .filter(s => s.length > 0)
 }
 
-const parseFunctionArgs = function (fn) {
+const parseFunctionArgs = (fn) => {
     const fnStr = fn.toString()
     const argStr = extractArgsString(fnStr)
     return parseArgsString(argStr)
 }
 
-const renderInputForArg = function (methodForm, arg) {
+const renderInputForArg = (methodForm, arg) => {
     const argInput = document.createElement('input')
     methodForm.appendChild(argInput)
     argInput.setAttribute('type', 'text')
@@ -28,14 +33,16 @@ const renderInputForArg = function (methodForm, arg) {
     return argInput
 }
 
-const handleMethodClick = function (object, property, inputs) {
+const handleMethodCall = (object, property, inputs, clear = true) => {
     const args = inputs.map(input => input.value)
     const result = property.call(object, ...args)
 
-    inputs.forEach(input => input.value = '')
+    if (clear) {
+        inputs.forEach(input => input.value = '')
 
-    if (inputs.length > 0) {
-        inputs[0].focus()
+        if (inputs.length > 0) {
+            inputs[0].focus()
+        }
     }
 
     if (result instanceof UserInterfaceAware) {
@@ -46,7 +53,7 @@ const handleMethodClick = function (object, property, inputs) {
     }
 }
 
-const renderMethod = function (object, objectDiv, name, method) {
+const renderMethod = (object, objectDiv, name, method) => {
     const args = parseFunctionArgs(method)
 
     const methodForm = document.createElement('div')
@@ -70,18 +77,34 @@ const renderMethod = function (object, objectDiv, name, method) {
         return renderInputForArg(methodForm, arg)
     })
 
-    const methodDiv = document.createElement('a')
-    methodForm.appendChild(methodDiv)
-    methodDiv.textContent = `${name}`
-    methodDiv.setAttribute('href', '#')
+    if (method.auto && args.length > 0) {
 
-    methodDiv.onclick = (event) => {
-        handleMethodClick(object, method, inputs)
-        event.preventDefault()
+        const handleArgChange = (event) => {
+            handleMethodCall(object, method, inputs, false)
+        }
+
+        inputs.forEach(input => {
+            input.onchange = handleArgChange
+            input.onkeyup = handleArgChange
+            input.onpaste = handleArgChange
+        })
+
+    } else {
+
+        const methodDiv = document.createElement('a')
+        methodForm.appendChild(methodDiv)
+        methodDiv.textContent = `${name}`
+        methodDiv.setAttribute('href', '#')
+
+        methodDiv.onclick = (event) => {
+            handleMethodCall(object, method, inputs)
+            event.preventDefault()
+        }
+
     }
 }
 
-const renderProperty = function (objectDiv, name, property) {
+const renderProperty = (objectDiv, name, property) => {
     const propertyDiv = document.createElement('div')
     objectDiv.appendChild(propertyDiv)
     propertyDiv.classList.add('property')
@@ -96,7 +119,7 @@ const renderProperty = function (objectDiv, name, property) {
     }
 }
 
-const renderUserControl = function (object, objectDiv, name) {
+const renderUserControl = (object, objectDiv, name) => {
     const property = object[name]
     if (property.hidden) {
         return
@@ -109,9 +132,9 @@ const renderUserControl = function (object, objectDiv, name) {
     }
 }
 
-export const renderObject = function (object) {
+export const renderObject = (object, container = appContainer) => {
     const objectDiv = document.createElement('div')
-    appContainer.appendChild(objectDiv)
+    container.appendChild(objectDiv)
     objectDiv.classList.add('object')
 
     object.obtainAllUserInterface().forEach(name => {
@@ -119,14 +142,58 @@ export const renderObject = function (object) {
     })
 }
 
+export const renderTool = object => {
+    renderObject(object, toolsContainer)
+}
+
+const contains = (string, filter) => {
+    let name = string.toLowerCase()
+    let searchString = filter.toLowerCase()
+    return name.indexOf(searchString) >= 0
+}
+
+const containsInObject = (object, filter) => {
+    return contains(object.constructor.name, filter) ||
+            contains(object.name || '', filter)
+}
+
+const essentialCompare = (a, b) => {
+    return (b.essential || 0) - (a.essential || 0)
+}
+
+const objectCompare = (a, b) => {
+    const compareByEssential = essentialCompare(a, b)
+
+    const compareByClass = a.constructor.name
+        .localeCompare(b.constructor.name)
+
+    const compareByName = (a.name || '')
+        .localeCompare(b.name || '')
+
+    if (compareByEssential !== 0) {
+        return compareByEssential
+    }
+
+    if (compareByClass !== 0) {
+        return compareByClass
+    }
+
+    return compareByName
+}
+
 export const renderAll = () => {
 
-    findFirstObject(MyWork).restoreSettingsState()
+    const myWork = findFirstObject(MyWork)
+    myWork.restoreSettingsState()
 
     appContainer.innerHTML = ''
 
     applicationObjects()
         .filter(object => !object.hidden)
+        .filter(object => {
+            return object.essential ||
+                containsInObject(object, filterTool.filterValue)
+        }).sort(objectCompare)
         .forEach(object => renderObject(object))
 
 }
