@@ -71,7 +71,6 @@ export class Task extends UserInterfaceAware {
     }
 
     replaceCompletedAtWithComplete() {
-        this.deDuplicateUserInterface()
         this.replaceCompletedWithComplete()
         this.removeUserInterface('completedAt')
         this.removeUserInterface('undo')
@@ -85,11 +84,6 @@ export class Task extends UserInterfaceAware {
     replaceCompletedWithComplete() {
         let index = this.userInterface.indexOf('completed')
         if (index >= 0) this.userInterface.splice(index, 1, 'complete')
-    }
-
-    deDuplicateUserInterface() {
-        this.userInterface = this.userInterface
-            .filter((item, pos, a) => a.indexOf(item) === pos)
     }
 
     today() {
