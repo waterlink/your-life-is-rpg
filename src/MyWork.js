@@ -27,10 +27,11 @@ const createObjectFromRaw = (rawObject) => {
 
 export class MyWork extends UserInterfaceAware {
 
-    userInterface = ['save', 'settings', 'reload', 'reset']
+    userInterface = ['save', 'settings', 'reload', 'importIt', 'reset']
     localStorageKey = 'MyWork.savedWork'
     settingsShown = true
     essential = 100
+    export = ''
 
     constructor() {
         super()
@@ -38,11 +39,18 @@ export class MyWork extends UserInterfaceAware {
         this.reset.danger = true
         this.reload.setting = true
         this.reset.setting = true
+        this.importIt.setting = true
+        this.importIt.danger = true
     }
 
     save() {
         const data = JSON.stringify(applicationObjects())
         localStorage.setItem(this.localStorageKey, data)
+    }
+
+    importIt(data) {
+        localStorage.setItem(this.localStorageKey, data)
+        this.reload()
     }
 
     reload() {
