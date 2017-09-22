@@ -1,11 +1,19 @@
 import {registerUserInterfaceAware, UserInterfaceAware} from '../UserInterfaceAware'
-import {findFirstObject} from '../Objects'
+import {findFirstObject, replaceObject} from '../Objects'
 import {Character} from '../character/Character'
 import {coloredNumber, today} from '../util'
+import {nextXpCombo, xpComboPresentation} from '../xpCombo'
+import {convertRawTo} from '../MyWork'
 
 export class Task extends UserInterfaceAware {
 
-    userInterface = ['name', 'hp', 'ep', 'complete', 'destroy']
+    userInterface = [
+        'name', 'hp', 'ep',
+        'xpGain', 'xpCombo',
+        'complete',
+        'change', 'makeSkilled',
+        'destroy',
+    ]
     name
 
     _hp = 0
@@ -18,6 +26,16 @@ export class Task extends UserInterfaceAware {
         return coloredNumber(this._ep)
     }
 
+    _xpGain = 0
+    get xpGain() {
+        return coloredNumber(this._xpGain)
+    }
+
+    _xpCombo = 1
+    get xpCombo() {
+        return xpComboPresentation(this._xpCombo)
+    }
+
     get completed() {
         return {
             toString: () => 'done',
@@ -25,14 +43,33 @@ export class Task extends UserInterfaceAware {
         }
     }
 
-    constructor(name, hp, ep) {
+    constructor(name, hp, ep, xpGain) {
         super()
-        this.name = name
-        this._hp = hp
-        this._ep = ep
+        this.name = name || ''
+        this._hp = hp || 0
+        this._ep = ep || 0
+        this._xpGain = xpGain || 0
 
         this.undo.danger = true
         this.undo.setting = true
+        this.change.setting = true
+        this.makeSkilled.setting = true
+    }
+
+    change(name, hp, ep, xpGain) {
+        this.name = name
+        this._hp = hp
+        this._ep = ep
+        this._xpGain = xpGain
+    }
+
+    ['change.defaultArgs']() {
+        return {
+            name: this.name,
+            hp: this._hp,
+            ep: this._ep,
+            xpGain: this._xpGain,
+        }
     }
 
     complete() {
@@ -42,8 +79,16 @@ export class Task extends UserInterfaceAware {
             character.changeHpBy(this.hp)
             character.changeEpBy(this.ep)
 
+            let xpAmount = this.xpGain * this._xpCombo
+            character.changeXpBy(xpAmount)
+            this.updateXpBeforeMarkingAsComplete(xpAmount)
+
             this.markAsCompleted()
         }
+    }
+
+    updateXpBeforeMarkingAsComplete(amount) {
+        this._xpCombo = nextXpCombo(this.completedAt, this._xpCombo)
     }
 
     markAsCompleted() {
@@ -94,6 +139,14 @@ export class Task extends UserInterfaceAware {
         this.completedAt = ''
         this.replaceCompletedAtWithComplete()
     }
+
+    makeSkilled() {
+        const skilledSubclass = Task.subclasses['skilled']
+        const skilledTask = convertRawTo(this, skilledSubclass)
+        replaceObject(this, skilledTask)
+    }
 }
+
+Task.subclasses = {}
 
 registerUserInterfaceAware(Task)

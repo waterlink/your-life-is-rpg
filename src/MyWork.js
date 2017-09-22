@@ -2,24 +2,29 @@ import {registerUserInterfaceAware, UserInterfaceAware, userInterfaceAwareClasse
 import {applicationObjects, findFirstObject, initialObjects, updateApplicationObjects} from './Objects'
 import {renderAll} from './Rendering'
 
+export const convertRawTo = (raw, klass) => {
+    const pristineObject = new klass()
+    const target = new klass()
+
+    try {
+        Object.assign(target, raw)
+    } catch (e) {
+        console.error(e)
+        return null
+    }
+
+    target.userInterface = pristineObject.userInterface
+    target.object = pristineObject.object
+
+    return target
+}
+
 const createObjectFromRaw = (rawObject) => {
     const className = rawObject.object
     const foundClass = userInterfaceAwareClasses.find(c => c.name === className)
 
     if (foundClass) {
-        const pristineObject = new foundClass()
-        const target = new foundClass()
-
-        try {
-            Object.assign(target, rawObject)
-        } catch (e) {
-            console.error(e)
-            return null
-        }
-
-        target.userInterface = pristineObject.userInterface
-
-        return target
+        return convertRawTo(rawObject, foundClass)
     }
 
     return null

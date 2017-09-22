@@ -39,4 +39,14 @@ export const makeSureInitialObjectsArePresent = () => {
     })
 }
 
+export const replaceObject = (object, newObject) => {
+    _applicationObjects = applicationObjects().map(o => {
+        if (o === object) {
+            return newObject
+        } else {
+            return o
+        }
+    })
+}
+
 window._applicationObjects = applicationObjects

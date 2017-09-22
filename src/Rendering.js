@@ -25,11 +25,12 @@ const parseFunctionArgs = (fn) => {
     return parseArgsString(argStr)
 }
 
-const renderInputForArg = (methodForm, arg) => {
+const renderInputForArg = (methodForm, arg, value) => {
     const argInput = document.createElement('input')
     methodForm.appendChild(argInput)
     argInput.setAttribute('type', 'text')
     argInput.setAttribute('placeholder', arg)
+    argInput.setAttribute('value', value)
     return argInput
 }
 
@@ -73,8 +74,11 @@ const renderMethod = (object, objectDiv, name, method) => {
         methodForm.classList.add('multiline')
     }
 
+    const defaultArgsFn = object[`${name}.defaultArgs`] || (() => ({}))
+    const defaultArgs = defaultArgsFn.call(object)
+
     const inputs = args.map(arg => {
-        return renderInputForArg(methodForm, arg)
+        return renderInputForArg(methodForm, arg, defaultArgs[arg] || '')
     })
 
     if (method.auto && args.length > 0) {

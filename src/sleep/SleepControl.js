@@ -2,6 +2,7 @@ import {registerUserInterfaceAware, UserInterfaceAware} from '../UserInterfaceAw
 import {coloredNumber, today} from '../util'
 import {findFirstObject} from '../Objects'
 import {Sleep} from './Sleep'
+import {nextXpCombo, xpComboPresentation} from '../xpCombo'
 
 export class SleepControl extends UserInterfaceAware {
 
@@ -18,11 +19,26 @@ export class SleepControl extends UserInterfaceAware {
         return coloredNumber(this._ep)
     }
 
-    constructor(name, hp, ep) {
+    _xpGain = 0
+    get xpGain() {
+        return coloredNumber(this._xpGain)
+    }
+
+    _xpCombo = 1
+    get xpCombo() {
+        return xpComboPresentation(this._xpCombo)
+    }
+
+    sleptAt = ''
+
+    constructor(name, hp, ep, xpGain) {
         super()
-        this.name = name
-        this._hp = hp
-        this._ep = ep
+        this.name = name || ''
+        this._hp = hp || 0
+        this._ep = ep || 0
+        this._xpGain = xpGain || 0
+
+        this.change.setting = true
 
         this.updateAfterLoad()
     }
@@ -31,7 +47,9 @@ export class SleepControl extends UserInterfaceAware {
         const sleep = findFirstObject(Sleep)
 
         this[this.name] = () => {
-            sleep.affectCharacter(this.hp, this.ep)
+            sleep.affectCharacter(this.hp, this.ep, this.xpGain * this._xpCombo)
+            this._xpCombo = nextXpCombo(this.sleptAt, this._xpCombo)
+            this.sleptAt = today()
         }
 
         if (sleep.sleptAt !== today()) {
@@ -41,8 +59,22 @@ export class SleepControl extends UserInterfaceAware {
         }
     }
 
+    change(hp, ep, xpGain) {
+        this._hp = hp
+        this._ep = ep
+        this._xpGain = xpGain
+    }
+
+    ['change.defaultArgs']() {
+        return {
+            hp: this._hp,
+            ep: this._ep,
+            xpGain: this._xpGain,
+        }
+    }
+
     commonUserInterfaceWith(...args) {
-        return ['hp', 'ep', ...args, 'destroy']
+        return ['hp', 'ep', 'xpGain', 'xpCombo', ...args, 'change', 'destroy']
     }
 
 }

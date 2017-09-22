@@ -1,5 +1,6 @@
 import {registerUserInterfaceAware, UserInterfaceAware} from '../UserInterfaceAware'
 import {Task} from './Task'
+import {SkilledTask} from './SkilledTask'
 
 export class NewTask extends UserInterfaceAware {
 
@@ -12,8 +13,12 @@ export class NewTask extends UserInterfaceAware {
         this.create.success = true
     }
 
-    create(name, hp, ep) {
-        return new Task(name, hp, ep)
+    create(name, hp, ep, xpGain, isSkilled) {
+        if (isSkilled === 'true' || isSkilled === 'yes') {
+            return new SkilledTask(name, hp, ep, xpGain)
+        } else {
+            return new Task(name, hp, ep, xpGain)
+        }
     }
 
 }

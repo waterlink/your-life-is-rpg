@@ -25,12 +25,13 @@ export class Sleep extends UserInterfaceAware {
         return new SleepControl(name, hp, ep)
     }
 
-    affectCharacter(hp, ep) {
+    affectCharacter(hp, ep, xpGain) {
         this.sleptAt = today()
 
         const character = findFirstObject(Character)
         character.changeHpBy(hp)
         character.changeEpBy(ep)
+        character.changeXpBy(xpGain)
 
         findAllObjects(SleepControl)
             .forEach(control => control.updateAfterLoad())

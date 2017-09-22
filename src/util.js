@@ -13,12 +13,19 @@ export const coloredNumber = number => {
     return result
 }
 
-export const today = () => {
-    const now = new Date()
+export const today = () => formatDate(new Date())
 
-    const day = now.getDate()
-    const month = now.getMonth() + 1
-    const year = now.getFullYear()
+export const yesterday = () => {
+    const date = new Date()
+    date.setDate(date.getDate() - 1)
+
+    return formatDate(date)
+}
+
+const formatDate = date => {
+    const day = date.getDate()
+    const month = date.getMonth() + 1
+    const year = date.getFullYear()
 
     return `${year}-${month}-${day}`
 }
