@@ -3,6 +3,7 @@ import {Character} from './character/Character'
 import {NewTask} from './tasks/NewTask'
 import {NewDisease} from './diseases/NewDisease'
 import {Sleep} from './sleep/Sleep'
+import {Reputation} from './character/Reputation'
 
 export const initialObjects = [
     new MyWork(),
@@ -10,6 +11,7 @@ export const initialObjects = [
     new NewTask(),
     new NewDisease(),
     new Sleep(),
+    new Reputation(),
 ]
 
 let _applicationObjects = initialObjects.map(x => x)

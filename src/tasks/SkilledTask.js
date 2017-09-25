@@ -41,7 +41,7 @@ export class SkilledTask extends Task {
         this._maxXp = result.maxXp
         this.lvl += result.lvlIncrease
 
-        super.updateXpBeforeMarkingAsComplete()
+        super.updateXpBeforeMarkingAsComplete(amount)
     }
 
 }
